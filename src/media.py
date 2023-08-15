@@ -51,8 +51,8 @@ class Medium:
         self.medium_id = uuid()
         self.ori_path = path
 
-    def init_des_path(self, parent_dir: str = None):
-        self.des_path = os.path.join(parent_dir, self.new_basename)
+    def init_des_path(self, parent_dir: str = None, perch_mount_id=""):
+        self.des_path = os.path.join(parent_dir, self._new_basename(perch_mount_id))
 
     def json(self) -> dict:
         return {
@@ -73,10 +73,14 @@ class Medium:
     def ori_basename(self):
         return os.path.basename(self.ori_path)
 
-    @property
-    def new_basename(self):
+    def _new_basename(self, perch_mount_id):
         _, ext = os.path.splitext(self.ori_basename)
-        return "%s_%s%s" % (self.medium_id[:8], self._str_datetime_for_filename, ext)
+        return "%s_%s_%s%s" % (
+            self.medium_id[:8],
+            perch_mount_id,
+            self._str_datetime_for_filename,
+            ext,
+        )
 
 
 class PMImage(Medium):

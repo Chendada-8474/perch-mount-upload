@@ -46,7 +46,10 @@ def read_sections() -> list[sm.Section]:
 
         # init des path
         for medium in section.media:
-            medium.init_des_path(parent_dir=section.section_dir)
+            medium.init_des_path(
+                parent_dir=section.section_dir,
+                perch_mount_id=section.parameters.perch_mount_id,
+            )
 
     return sections
 
