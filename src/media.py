@@ -67,7 +67,7 @@ class Medium:
 
     @property
     def _str_datetime_for_filename(self):
-        return datetime.strftime(self.medium_datetime, "%Y%m%d%H%M%S")
+        return datetime.strftime(self.medium_datetime, "%Y%m%d_%H%M%S")
 
     @property
     def ori_basename(self):
@@ -76,9 +76,9 @@ class Medium:
     def _new_basename(self, perch_mount_id):
         _, ext = os.path.splitext(self.ori_basename)
         return "%s_%s_%s%s" % (
-            self.medium_id[:8],
             perch_mount_id,
             self._str_datetime_for_filename,
+            self.medium_id[:8],
             ext,
         )
 
