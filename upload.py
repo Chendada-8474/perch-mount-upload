@@ -5,57 +5,20 @@ import shutil
 import easygui
 import requests
 import urllib.parse
-import src.media as sm
+import src.media
+from src.reader import SectionReader
 import configs.config as config
 
 
-def read_sections() -> list[sm.Section]:
+def read_sections() -> list[src.media.Section]:
     parent_dir = easygui.diropenbox(msg="請選擇要上傳的資料夾。")
 
-    sections: list[sm.Section] = []
+    reader = SectionReader(parent_dir)
 
-    for section_dir in os.listdir(parent_dir):
-        section_path = os.path.join(parent_dir, section_dir)
-
-        if not os.path.isdir(section_path):
-            continue
-
-        sections.append(sm.Section(section_path))
-
-    section_errors = []
-
-    for section in sections:
-        if not section.parameters:
-            error_mes = "yaml parameter file not found in %s" % section.dir_path
-            section_errors.append(error_mes)
-        if section.parameters.uploaded:
-            error_mes = "%s %s has been uploaded before" % (
-                section.parameters.perch_mount_name,
-                section.parameters.str_check_date,
-            )
-            section_errors.append(error_mes)
-
-    if section_errors:
-        raise SystemError("upload failed.\n%s" % "\n".join(section_errors))
-
-    for section in sections:
-        # read media in target dir
-        section.read_media()
-
-        # mkdir for section in destination
-        section.make_des_dir()
-
-        # init des path
-        for medium in section.media:
-            medium.init_des_path(
-                parent_dir=section.section_dir,
-                perch_mount_id=section.parameters.perch_mount_id,
-            )
-
-    return sections
+    return reader.get_sections()
 
 
-def post_section(section: sm.Section) -> int:
+def post_section(section: src.media.Section) -> int:
     section_url = urllib.parse.urljoin(config.HOST, "/api/section")
     operators_url = urllib.parse.urljoin(config.HOST, "/api/section/%s/operators")
     headers = {"Content-type": "application/json", "Accept": "text/plain"}
@@ -81,7 +44,7 @@ def post_section(section: sm.Section) -> int:
     return section_id
 
 
-def save_task(section_id: int, section: sm.Section):
+def save_task(section_id: int, section: src.media.Section):
     task_path = os.path.join(
         config.TASK_TARGET_DIR,
         "%s_%s.json"
@@ -94,6 +57,7 @@ def save_task(section_id: int, section: sm.Section):
 
 def main():
     # read sections, and raise error when yaml not found in section dir
+
     sections = read_sections()
 
     for section in sections:
