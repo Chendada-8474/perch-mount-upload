@@ -23,6 +23,7 @@ def read_sections() -> list[sm.Section]:
         sections.append(sm.Section(section_path))
 
     section_errors = []
+
     for section in sections:
         if not section.parameters:
             error_mes = "yaml parameter file not found in %s" % section.dir_path
