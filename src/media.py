@@ -33,6 +33,18 @@ class Parameter:
         with open(self.path, "w", encoding="utf-8") as f:
             parameter = yaml.dump(self._dict, f)
 
+    def json(self) -> dict:
+        return {
+            "perch_mount": self.perch_mount_id,
+            "mount_type": self.mount_type,
+            "camera": self.camera,
+            "start_time": self.str_start_time,
+            "end_time": self.str_end_time,
+            "check_date": self.str_check_date,
+            "valid": self.valid,
+            "note": self.note,
+        }
+
     @property
     def str_check_date(self):
         return datetime.strftime(self.check_date, "%Y-%m-%d")
@@ -167,9 +179,9 @@ class Section:
         for medium in self.media:
             medium.medium_datetime += time_diff
 
-    def json(self, section_id: int):
+    def json(self) -> dict:
         return {
-            "section": section_id,
+            "section": self.parameters.json(),
             "media": [medium.json() for medium in self.media],
         }
 
