@@ -11,6 +11,7 @@ class SectionReader:
         self._is_parameters_duplicated()
         self._is_parameters_exsit()
         self._rasie_if_errors()
+        self._init_childrens()
 
     def get_sections(self) -> list[Section]:
         return self.sections
@@ -60,3 +61,18 @@ class SectionReader:
     def _rasie_if_errors(self):
         if self._errors:
             raise SystemError("upload failed.\n%s" % "\n".join(self._errors))
+
+    def _init_childrens(self):
+        for section in self.sections:
+            # read media in target dir
+            section.read_media()
+
+            # mkdir for section in destination
+            section.make_des_dir()
+
+            # init des path
+            for medium in section.media:
+                medium.init_des_path(
+                    parent_dir=section.section_dir,
+                    perch_mount_id=section.parameters.perch_mount_id,
+                )
