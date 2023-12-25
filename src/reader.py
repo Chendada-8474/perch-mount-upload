@@ -1,5 +1,5 @@
 import os
-from media import Section
+from src.media import Section
 
 
 class SectionReader:
@@ -8,13 +8,19 @@ class SectionReader:
     def __init__(self, dir_path: str) -> None:
         self.sections = self._read_sections(dir_path)
 
-        self._is_parameters_duplicated()
-        self._is_parameters_exsit()
-        self._rasie_if_errors()
+        self._check_parameters(self.sections)
+        # self._rasie_if_errors()
         self._init_childrens()
 
     def get_sections(self) -> list[Section]:
         return self.sections
+
+    def _check_parameters(self, sections: list[Section]):
+        if not self._is_all_parameters_exsit(sections):
+            raise FileNotFoundError("upload failed.\n%s" % "\n".join(self._errors))
+
+        if self._is_any_parameters_duplicated(sections):
+            raise SystemError("upload failed.\n%s" % "\n".join(self._errors))
 
     def _read_sections(self, dir_path) -> list[Section]:
         sections: list[Section] = []
@@ -29,7 +35,7 @@ class SectionReader:
 
         return sections
 
-    def _is_parameters_exsit(self, sections: list[Section]) -> bool:
+    def _is_all_parameters_exsit(self, sections: list[Section]) -> bool:
         exsit = True
 
         for section in sections:
@@ -42,7 +48,7 @@ class SectionReader:
 
         return exsit
 
-    def _is_parameters_duplicated(self, sections: list[Section]) -> bool:
+    def _is_any_parameters_duplicated(self, sections: list[Section]) -> bool:
         duplicated = False
 
         for section in sections:

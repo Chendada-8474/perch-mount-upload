@@ -36,11 +36,12 @@ class Parameter:
     def json(self) -> dict:
         return {
             "perch_mount": self.perch_mount_id,
+            "perch_mount_name": self.perch_mount_name,
+            "project": self.project,
             "mount_type": self.mount_type,
             "camera": self.camera,
-            "start_time": self.str_start_time,
-            "end_time": self.str_end_time,
             "check_date": self.str_check_date,
+            "operators": self.operators,
             "valid": self.valid,
             "note": self.note,
         }
