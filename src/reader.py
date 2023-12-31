@@ -74,11 +74,16 @@ class SectionReader:
             section.read_media()
 
             # mkdir for section in destination
-            section.make_des_dir()
+            section.init_des_dir()
+            section.init_nas_dir()
 
             # init des path
             for medium in section.media:
                 medium.init_des_path(
-                    parent_dir=section.section_dir,
+                    parent_dir=section.des_dir,
+                    perch_mount_id=section.parameters.perch_mount_id,
+                )
+                medium.init_nas_path(
+                    parent_dir=section.nas_dir,
                     perch_mount_id=section.parameters.perch_mount_id,
                 )
