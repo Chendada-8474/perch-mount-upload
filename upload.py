@@ -49,7 +49,7 @@ def main():
         # save task file for schedule detector
         save_task(section)
 
-        # update yaml uploaded as True
+        # tag yaml uploaded as True
         section.parameters.tag_uploaded()
 
         print("%s 上傳成功！" % section_name)

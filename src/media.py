@@ -58,6 +58,7 @@ class Parameter:
 
 class Medium:
     des_path = None
+    nas_path = None
     medium_datetime = None
 
     def __init__(self, path: str) -> None:
@@ -65,13 +66,21 @@ class Medium:
         self.ori_path = path
 
     def init_des_path(self, parent_dir: str = None, perch_mount_id=""):
-        self.des_path = os.path.join(parent_dir, self._new_basename(perch_mount_id))
+        self.des_path = os.path.join(
+            parent_dir, self._get_basename_by_perch_mount_id(perch_mount_id)
+        )
+
+    def init_nas_path(self, parent_dir: str, perch_mount_id):
+        self.nas_path = os.path.join(
+            parent_dir, self._get_basename_by_perch_mount_id(perch_mount_id)
+        )
 
     def json(self) -> dict:
         return {
             "medium_id": self.medium_id,
             "medium_datetime": self.str_medium_datetime,
             "path": self.des_path,
+            "nas_path": self.nas_path,
         }
 
     @property
@@ -86,7 +95,7 @@ class Medium:
     def ori_basename(self):
         return os.path.basename(self.ori_path)
 
-    def _new_basename(self, perch_mount_id):
+    def _get_basename_by_perch_mount_id(self, perch_mount_id):
         _, ext = os.path.splitext(self.ori_basename)
         return "%s_%s_%s%s" % (
             perch_mount_id,
@@ -118,7 +127,8 @@ class PMVideo(Medium):
 
 
 class Section:
-    section_dir = None
+    des_dir = None
+    nas_dir = None
 
     def __init__(self, dir_path: str) -> None:
         self.dir_path = dir_path
@@ -162,15 +172,24 @@ class Section:
                 paths.append(os.path.join(subdir, file))
         return paths
 
-    def make_des_dir(self):
+    def init_des_dir(self):
         des_dir = os.path.join(
-            config.MEDIA_ROOT,
+            config.MEDIA_PENDING_STORAGE,
             self.parameters.project,
             self.parameters.perch_mount_name,
             self.parameters.str_check_date,
         )
-        self.section_dir = des_dir
+        self.des_dir = des_dir
         Path(des_dir).mkdir(parents=True, exist_ok=True)
+
+    def init_nas_dir(self):
+        nas_dir = os.path.join(
+            config.NAS_DIR,
+            self.parameters.project,
+            self.parameters.perch_mount_name,
+            self.parameters.str_check_date,
+        )
+        self.nas_dir = nas_dir
 
     def shift_media_datetime(self):
         if not self.parameters.start_time:
