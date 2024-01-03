@@ -200,8 +200,11 @@ class Section:
             medium.medium_datetime += time_diff
 
     def json(self) -> dict:
+        section = self.parameters.json()
+        section["start_time"] = self.str_start_time
+        section["end_time"] = self.str_end_time
         return {
-            "section": self.parameters.json(),
+            "section": section,
             "media": [medium.json() for medium in self.media],
         }
 
