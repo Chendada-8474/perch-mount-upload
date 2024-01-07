@@ -132,7 +132,8 @@ class Section:
 
     def __init__(self, dir_path: str) -> None:
         self.dir_path = dir_path
-        self.parameters = self._read_parameter()
+        self._parameter_path = self._get_parameter_path()
+        self.parameters = self._read_parameter(self._parameter_path)
         self.media: list[Medium] = []
 
     def read_media(self):
@@ -151,11 +152,14 @@ class Section:
             except Exception as e:
                 print(e)
 
-    def _read_parameter(self):
+    def _get_parameter_path(self) -> str:
         for path in self._all_paths(self.dir_path):
             ext = os.path.splitext(path)[1]
             if ext == ".yaml":
-                return Parameter(path)
+                return path
+
+    def _read_parameter(self, path: str):
+        return Parameter(path)
 
     def medium_type(self, file_name) -> str:
         ext = os.path.splitext(file_name)[1][1:].lower()
@@ -207,6 +211,9 @@ class Section:
             "section": section,
             "media": [medium.json() for medium in self.media],
         }
+
+    def remove_file(self):
+        os.remove()
 
     @property
     def start_time(self) -> datetime:
