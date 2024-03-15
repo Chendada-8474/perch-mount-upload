@@ -26,6 +26,7 @@ def save_task(section: src.media.Section):
     task_path = os.path.join(config.TASK_TARGET_DIR, file_name)
     task_media_path = os.path.join(
         config.MEDIA_PENDING_STORAGE,
+        section.parameters.project,
         section.parameters.perch_mount_name,
         section.parameters.str_check_date,
         file_name,
