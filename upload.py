@@ -17,13 +17,23 @@ def read_sections() -> list[src.media.Section]:
 
 
 def save_task(section: src.media.Section):
-    task_path = os.path.join(
-        config.TASK_TARGET_DIR,
+
+    file_name = (
         "%s_%s.json"
         % (section.parameters.perch_mount_name, section.parameters.str_check_date),
     )
 
+    task_path = os.path.join(config.TASK_TARGET_DIR, file_name)
+    task_media_path = os.path.join(
+        config.MEDIA_PENDING_STORAGE,
+        section.parameters.perch_mount_name,
+        section.parameters.str_check_date,
+        file_name,
+    )
+
     with open(task_path, "w", encoding="utf-8") as f:
+        json.dump(section.json(), f, ensure_ascii=False, indent=4)
+    with open(task_media_path, "w", encoding="utf-8") as f:
         json.dump(section.json(), f, ensure_ascii=False, indent=4)
 
 
