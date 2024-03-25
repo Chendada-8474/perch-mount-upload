@@ -136,4 +136,4 @@ script.py
 mysql.py
 demo_media
 manual
-config.py
+configs/config.py
