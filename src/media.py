@@ -33,6 +33,19 @@ class Parameter:
         with open(self.path, "w", encoding="utf-8") as f:
             parameter = yaml.dump(self._dict, f)
 
+    def json(self) -> dict:
+        return {
+            "perch_mount": self.perch_mount_id,
+            "perch_mount_name": self.perch_mount_name,
+            "project": self.project,
+            "mount_type": self.mount_type,
+            "camera": self.camera,
+            "check_date": self.str_check_date,
+            "operators": self.operators,
+            "valid": self.valid,
+            "note": self.note,
+        }
+
     @property
     def str_check_date(self):
         return datetime.strftime(self.check_date, "%Y-%m-%d")
@@ -45,6 +58,7 @@ class Parameter:
 
 class Medium:
     des_path = None
+    nas_path = None
     medium_datetime = None
 
     def __init__(self, path: str) -> None:
@@ -52,13 +66,21 @@ class Medium:
         self.ori_path = path
 
     def init_des_path(self, parent_dir: str = None, perch_mount_id=""):
-        self.des_path = os.path.join(parent_dir, self._new_basename(perch_mount_id))
+        self.des_path = os.path.join(
+            parent_dir, self._get_basename_by_perch_mount_id(perch_mount_id)
+        )
+
+    def init_nas_path(self, parent_dir: str, perch_mount_id):
+        self.nas_path = os.path.join(
+            parent_dir, self._get_basename_by_perch_mount_id(perch_mount_id)
+        )
 
     def json(self) -> dict:
         return {
             "medium_id": self.medium_id,
             "medium_datetime": self.str_medium_datetime,
             "path": self.des_path,
+            "nas_path": self.nas_path,
         }
 
     @property
@@ -73,7 +95,7 @@ class Medium:
     def ori_basename(self):
         return os.path.basename(self.ori_path)
 
-    def _new_basename(self, perch_mount_id):
+    def _get_basename_by_perch_mount_id(self, perch_mount_id):
         _, ext = os.path.splitext(self.ori_basename)
         return "%s_%s_%s%s" % (
             perch_mount_id,
@@ -105,11 +127,13 @@ class PMVideo(Medium):
 
 
 class Section:
-    section_dir = None
+    des_dir = None
+    nas_dir = None
 
     def __init__(self, dir_path: str) -> None:
         self.dir_path = dir_path
-        self.parameters = self._read_parameter()
+        self._parameter_path = self._get_parameter_path()
+        self.parameters = self._read_parameter(self._parameter_path)
         self.media: list[Medium] = []
 
     def read_media(self):
@@ -128,11 +152,14 @@ class Section:
             except Exception as e:
                 print(e)
 
-    def _read_parameter(self):
+    def _get_parameter_path(self) -> str:
         for path in self._all_paths(self.dir_path):
             ext = os.path.splitext(path)[1]
             if ext == ".yaml":
-                return Parameter(path)
+                return path
+
+    def _read_parameter(self, path: str):
+        return Parameter(path)
 
     def medium_type(self, file_name) -> str:
         ext = os.path.splitext(file_name)[1][1:].lower()
@@ -149,15 +176,24 @@ class Section:
                 paths.append(os.path.join(subdir, file))
         return paths
 
-    def make_des_dir(self):
+    def init_des_dir(self):
         des_dir = os.path.join(
-            config.MEDIA_ROOT,
+            config.MEDIA_PENDING_STORAGE,
             self.parameters.project,
             self.parameters.perch_mount_name,
             self.parameters.str_check_date,
         )
-        self.section_dir = des_dir
+        self.des_dir = des_dir
         Path(des_dir).mkdir(parents=True, exist_ok=True)
+
+    def init_nas_dir(self):
+        nas_dir = os.path.join(
+            config.NAS_DIR,
+            self.parameters.project,
+            self.parameters.perch_mount_name,
+            self.parameters.str_check_date,
+        )
+        self.nas_dir = nas_dir
 
     def shift_media_datetime(self):
         if not self.parameters.start_time:
@@ -167,11 +203,17 @@ class Section:
         for medium in self.media:
             medium.medium_datetime += time_diff
 
-    def json(self, section_id: int):
+    def json(self) -> dict:
+        section = self.parameters.json()
+        section["start_time"] = self.str_start_time
+        section["end_time"] = self.str_end_time
         return {
-            "section": section_id,
+            "section": section,
             "media": [medium.json() for medium in self.media],
         }
+
+    def remove_file(self):
+        os.remove()
 
     @property
     def start_time(self) -> datetime:
